@@ -17,7 +17,7 @@ def main():
 
     series = series.drop_duplicates()
     series = series.sort_values(ascending=True)
-    series = series.to_list()
+    series = seriea.to_list()
     # series = sorted(series, key=lambda x: len(x))
 
     for value in series:
