@@ -1,3 +1,8 @@
+import csv
+import gzip
+from collections import defaultdict
+
+
 def pregunta_07():
     """
     Para cada valor distinto de la segunda columna (`value`), construya la
@@ -10,5 +15,9 @@ def pregunta_07():
 
         [(0, ["C"]), (1, ["E", "B", "E"]), (2, ["A", "E"]), ...]
     """
-
-    raise NotImplementedError
+    letters_by_value = defaultdict(list)
+    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as file:
+        for row in csv.reader(file, delimiter="\t"):
+            if row:
+                letters_by_value[int(row[1])].append(row[0])
+    return sorted(letters_by_value.items())

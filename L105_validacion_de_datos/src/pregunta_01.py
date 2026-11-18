@@ -1,3 +1,9 @@
+import json
+import re
+from pathlib import Path
+import pandas as pd
+
+
 def main():
     """
     Antes de limpiar o analizar un conjunto de datos, un analista debe
@@ -47,5 +53,62 @@ def main():
           "country_values": [" Colombia ", "CO", ...]
         }
     """
+    df = pd.read_csv("data/ventas.csv.gz", dtype=str, keep_default_na=False)
+    df.columns = [
+        re.sub(r"\s+", "_", col.lstrip("\ufeff").strip().lower())
+        for col in df.columns
+    ]
 
-    raise NotImplementedError
+    required_columns = [
+        "supplier_id",
+        "supplier",
+        "country",
+        "city",
+        "purchase_date",
+        "amount",
+        "discount",
+        "weight",
+        "units",
+        "unit_price",
+        "contact_email",
+    ]
+
+    missing_values = {"", "N/A"}
+    email_pattern = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+    invalid_unit_count = 0
+    for val in df["units"]:
+        if val in missing_values:
+            continue
+        try:
+            num = float(val)
+        except ValueError:
+            continue
+        if not (num > 0 and num.is_integer()):
+            invalid_unit_count += 1
+
+    report = {
+        "row_count": int(len(df)),
+        "column_count": int(len(df.columns)),
+        "missing_required_columns": sorted(set(required_columns) - set(df.columns)),
+        "unexpected_columns": sorted(set(df.columns) - set(required_columns)),
+        "duplicate_row_count": int(df.duplicated().sum()),
+        "duplicate_supplier_id_row_count": int(
+            df["supplier_id"].duplicated(keep=False).sum()
+        ),
+        "missing_value_count_by_column": {
+            col: int(df[col].isin(missing_values).sum()) for col in df.columns
+        },
+        "invalid_email_count": int(
+            (~df["contact_email"].str.match(email_pattern)).sum()
+        ),
+        "invalid_unit_count": invalid_unit_count,
+        "country_values": sorted(df["country"].unique().tolist()),
+    }
+
+    submission_dir = Path("submission")
+    submission_dir.mkdir(parents=True, exist_ok=True)
+    (submission_dir / "data_quality_report.json").write_text(
+        json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    return report

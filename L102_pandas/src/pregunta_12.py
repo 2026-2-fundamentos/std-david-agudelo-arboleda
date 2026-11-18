@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def pregunta_12():
     """
     En `data/tbl2.tsv`, cada valor de la columna `c0` aparece en varias
@@ -14,5 +17,6 @@ def pregunta_12():
         2    2        ccc:6,ddd:2,ggg:5,jjj:1
         ...
     """
-
-    raise NotImplementedError
+    df = pd.read_csv("data/tbl2.tsv", sep="\t")
+    df["c5"] = df["c5a"] + ":" + df["c5b"].astype(str)
+    return df.groupby("c0")["c5"].agg(lambda s: ",".join(sorted(s))).reset_index()

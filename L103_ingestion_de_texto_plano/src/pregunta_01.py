@@ -1,3 +1,7 @@
+import re
+import pandas as pd
+
+
 def pregunta_01():
     """
     El archivo `data/clusters_report.txt` es un reporte de clústeres de
@@ -25,5 +29,33 @@ def pregunta_01():
         1        2                         102                          15.4
         ...
     """
+    pattern = re.compile(r"^\s*(\d+)\s+(\d+)\s+([\d,]+)\s*%\s+(.*)$")
+    rows = []
+    current = None
 
-    raise NotImplementedError
+    with open("data/clusters_report.txt", encoding="utf-8") as file:
+        for line in file.readlines()[4:]:
+            match = pattern.match(line)
+            if match:
+                if current is not None:
+                    rows.append(current)
+                current = {
+                    "cluster": int(match.group(1)),
+                    "cantidad_de_palabras_clave": int(match.group(2)),
+                    "porcentaje_de_palabras_clave": float(
+                        match.group(3).replace(",", ".")
+                    ),
+                    "principales_palabras_clave": match.group(4).strip(),
+                }
+            elif current is not None and line.strip():
+                current["principales_palabras_clave"] += " " + line.strip()
+
+    if current is not None:
+        rows.append(current)
+
+    for row in rows:
+        row["principales_palabras_clave"] = " ".join(
+            row["principales_palabras_clave"].split()
+        ).rstrip(".")
+
+    return pd.DataFrame(rows)

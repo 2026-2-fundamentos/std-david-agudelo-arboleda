@@ -1,3 +1,7 @@
+from pathlib import Path
+import pandas as pd
+
+
 def pregunta_01():
     """
     El archivo `data/solicitudes_de_credito.csv.gz` contiene las solicitudes de
@@ -33,5 +37,62 @@ def pregunta_01():
         femenino;comercio;almacen de ropa en;los cerros el vergel;2;...
         ...
     """
+    columns = [
+        "sexo",
+        "tipo_de_emprendimiento",
+        "idea_negocio",
+        "barrio",
+        "estrato",
+        "comuna_ciudadano",
+        "fecha_de_beneficio",
+        "monto_del_credito",
+        "línea_credito",
+    ]
+    text_columns = [
+        "sexo",
+        "tipo_de_emprendimiento",
+        "idea_negocio",
+        "barrio",
+        "línea_credito",
+    ]
 
-    raise NotImplementedError
+    df = pd.read_csv(
+        "data/solicitudes_de_credito.csv.gz", sep=";", index_col=0
+    )
+    df = df[columns]
+    df = df.dropna(subset=[col for col in columns if col != "comuna_ciudadano"])
+
+    for col in text_columns:
+        df[col] = (
+            df[col]
+            .astype(str)
+            .str.lower()
+            .str.replace("_", " ", regex=False)
+            .str.replace("-", " ", regex=False)
+            .str.strip()
+        )
+
+    df["estrato"] = df["estrato"].astype(int)
+    df["comuna_ciudadano"] = df["comuna_ciudadano"].astype("Int64")
+    df["monto_del_credito"] = (
+        df["monto_del_credito"]
+        .astype(str)
+        .str.replace(r"[$,\s]", "", regex=True)
+        .astype(float)
+        .astype(int)
+    )
+
+    dates = pd.to_datetime(
+        df["fecha_de_beneficio"], format="%d/%m/%Y", errors="coerce"
+    )
+    for fmt in ["%Y-%m-%d", "%Y/%m/%d"]:
+        dates = dates.fillna(
+            pd.to_datetime(df["fecha_de_beneficio"], format=fmt, errors="coerce")
+        )
+    df["fecha_de_beneficio"] = dates.dt.strftime("%Y-%m-%d")
+
+    df = df.drop_duplicates()
+
+    submission_dir = Path("submission")
+    submission_dir.mkdir(parents=True, exist_ok=True)
+    df.to_csv(submission_dir / "solicitudes_de_credito.csv", sep=";", index=False)

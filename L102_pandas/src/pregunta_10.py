@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def pregunta_10():
     """
     Usando `data/tbl0.tsv`, construya para cada categoría de la columna `c1`
@@ -14,5 +17,5 @@ def pregunta_10():
         C           0:5:6:7:9
         ...
     """
-
-    raise NotImplementedError
+    df = pd.read_csv("data/tbl0.tsv", sep="\t")
+    return df.groupby("c1")["c2"].agg(lambda s: ":".join(str(x) for x in sorted(s))).to_frame()

@@ -1,3 +1,8 @@
+import csv
+import gzip
+from collections import Counter
+
+
 def pregunta_04():
     """
     Cuente cuántos registros hay en cada mes, usando la fecha de la tercera
@@ -8,5 +13,10 @@ def pregunta_04():
 
         [("01", 3), ("02", 4), ("03", 2), ...]
     """
-
-    raise NotImplementedError
+    counts = Counter()
+    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as file:
+        for row in csv.reader(file, delimiter="\t"):
+            if row:
+                month = row[2].split("-")[1]
+                counts[month] += 1
+    return sorted(counts.items())
