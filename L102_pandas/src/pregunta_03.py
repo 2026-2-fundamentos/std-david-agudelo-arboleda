@@ -15,5 +15,5 @@ def pregunta_03():
         C     5
         ...
     """
-    df = pd.read_csv("data/tbl0.tsv", sep="\t")
-    return df["c1"].value_counts().sort_index()
+    tabla = pd.read_csv("data/tbl0.tsv", sep="\t")
+    return tabla["c1"].value_counts().sort_index()

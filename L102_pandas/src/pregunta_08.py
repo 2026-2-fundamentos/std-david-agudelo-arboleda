@@ -14,6 +14,6 @@ def pregunta_08():
         2    2  B   5  1998-05-02     7
         ...
     """
-    df = pd.read_csv("data/tbl0.tsv", sep="\t")
-    df["suma"] = df["c0"] + df["c2"]
-    return df
+    tabla = pd.read_csv("data/tbl0.tsv", sep="\t")
+    tabla["suma"] = tabla["c0"] + tabla["c2"]
+    return tabla

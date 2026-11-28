@@ -15,9 +15,9 @@ def pregunta_07():
 
         [(0, ["C"]), (1, ["E", "B", "E"]), (2, ["A", "E"]), ...]
     """
-    letters_by_value = defaultdict(list)
-    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as file:
-        for row in csv.reader(file, delimiter="\t"):
+    letras_por_valor = defaultdict(list)
+    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as archivo:
+        for row in csv.reader(archivo, delimiter="\t"):
             if row:
-                letters_by_value[int(row[1])].append(row[0])
-    return sorted(letters_by_value.items())
+                letras_por_valor[int(row[1])].append(row[0])
+    return sorted(letras_por_valor.items())

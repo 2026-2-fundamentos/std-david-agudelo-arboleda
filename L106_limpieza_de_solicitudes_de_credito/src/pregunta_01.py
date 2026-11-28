@@ -37,7 +37,7 @@ def pregunta_01():
         femenino;comercio;almacen de ropa en;los cerros el vergel;2;...
         ...
     """
-    columns = [
+    columnas = [
         "sexo",
         "tipo_de_emprendimiento",
         "idea_negocio",
@@ -48,7 +48,7 @@ def pregunta_01():
         "monto_del_credito",
         "línea_credito",
     ]
-    text_columns = [
+    columnas_texto = [
         "sexo",
         "tipo_de_emprendimiento",
         "idea_negocio",
@@ -59,10 +59,10 @@ def pregunta_01():
     df = pd.read_csv(
         "data/solicitudes_de_credito.csv.gz", sep=";", index_col=0
     )
-    df = df[columns]
-    df = df.dropna(subset=[col for col in columns if col != "comuna_ciudadano"])
+    df = df[columnas]
+    df = df.dropna(subset=[col for col in columnas if col != "comuna_ciudadano"])
 
-    for col in text_columns:
+    for col in columnas_texto:
         df[col] = (
             df[col]
             .astype(str)
@@ -82,17 +82,17 @@ def pregunta_01():
         .astype(int)
     )
 
-    dates = pd.to_datetime(
+    fechas = pd.to_datetime(
         df["fecha_de_beneficio"], format="%d/%m/%Y", errors="coerce"
     )
     for fmt in ["%Y-%m-%d", "%Y/%m/%d"]:
-        dates = dates.fillna(
+        fechas = fechas.fillna(
             pd.to_datetime(df["fecha_de_beneficio"], format=fmt, errors="coerce")
         )
-    df["fecha_de_beneficio"] = dates.dt.strftime("%Y-%m-%d")
+    df["fecha_de_beneficio"] = fechas.dt.strftime("%Y-%m-%d")
 
     df = df.drop_duplicates()
 
-    submission_dir = Path("submission")
-    submission_dir.mkdir(parents=True, exist_ok=True)
-    df.to_csv(submission_dir / "solicitudes_de_credito.csv", sep=";", index=False)
+    carpeta_salida = Path("submission")
+    carpeta_salida.mkdir(parents=True, exist_ok=True)
+    df.to_csv(carpeta_salida / "solicitudes_de_credito.csv", sep=";", index=False)

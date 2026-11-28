@@ -1,3 +1,4 @@
+from pathlib import Path
 import pandas as pd
 
 
@@ -50,4 +51,68 @@ def pregunta_01() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         ...
     """
 
-    raise NotImplementedError
+
+    #data
+    df = pd.read_csv("data/superstore_orders.csv.gz", sep=";", decimal=",")
+    df["is_loss"] = df["Profit"] < 0
+    df["loss"] = (-df["Profit"]).clip(lower=0)
+    df["discount_band"] = pd.cut(
+        df["Discount"],
+        bins=[-1, 0, 0.05, 0.10, 10],
+        labels=["0%", "1%-5%", "6%-10%", "más de 10%"],
+    )
+
+
+    #sss.........
+    resumen = pd.DataFrame([{
+        "lines": len(df),
+        "orders": df["Order ID"].nunique(),
+        "sales": df["Sales"].sum(),
+        "profit": df["Profit"].sum(),
+        "profit_margin": df["Profit"].sum() / df["Sales"].sum(),
+        "loss_lines": int(df["is_loss"].sum()),
+        "loss_line_rate": df["is_loss"].mean(),
+        "lost_profit": df["loss"].sum(),
+    }]) 
+
+    #-.
+
+    descuentos = df.groupby("discount_band", observed=False, as_index=False).agg(
+        lines=("Order ID", "size"),
+        sales=("Sales", "sum"),
+        profit=("Profit", "sum"),
+        loss_line_rate=("is_loss", "mean"),
+        lost_profit=("loss", "sum"),)
+
+    descuentos["profit_margin"] = descuentos["profit"] / descuentos["sales"]
+    
+    descuentos = descuentos[
+        ["discount_band", "lines", "sales", "profit", "profit_margin", "loss_line_rate", "lost_profit"]]
+
+    #-----
+
+    segmentos = df.groupby(["Customer Segment", "Product Category"], as_index=False).agg(
+        lines=("Order ID", "size"),
+        sales=("Sales", "sum"),
+        profit=("Profit", "sum"),
+        lost_profit=("loss", "sum"),)
+
+    #print(segmentos)
+    
+    segmentos = segmentos[segmentos["lines"] >= 100].sort_values("lost_profit", ascending=False).head(5)
+    
+    
+    segmentos["profit_margin"] = segmentos["profit"] / segmentos["sales"]
+    
+    segmentos = segmentos[
+        ["Customer Segment", "Product Category", "lines", "sales", "profit", "profit_margin", "lost_profit"]]
+
+    #print(segmentos)
+
+    carpeta_salida = Path("submission")
+    carpeta_salida.mkdir(parents=True, exist_ok=True)
+    resumen.to_csv(carpeta_salida / "profitability_summary.csv", index=False)
+    descuentos.to_csv(carpeta_salida / "discount_summary.csv", index=False)
+    segmentos.to_csv(carpeta_salida / "priority_segments.csv", index=False)
+
+    return resumen, descuentos, segmentos

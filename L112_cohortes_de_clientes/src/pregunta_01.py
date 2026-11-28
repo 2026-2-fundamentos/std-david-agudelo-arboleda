@@ -1,3 +1,5 @@
+from pathlib import Path
+import matplotlib.pyplot as plt
 import pandas as pd
 
 
@@ -43,5 +45,54 @@ def build_cohort_analysis() -> pd.DataFrame:
         2022-01,1,26,100,0.26
         ...
     """
+    #df--
+    df = pd.read_csv("data/sales.csv.gz")
 
-    raise NotImplementedError
+    df["order_month"] = pd.to_datetime(df["OrderDate"]).dt.to_period("M")
+    df["cohort_month"] = df.groupby("CustomerID")["order_month"].transform("min")
+    #?
+    df["period_index"] = (df["order_month"] - df["cohort_month"]).apply(lambda x: x.n)
+
+    df["cohort_month"] = df["cohort_month"].astype(str)
+    #print(df.head()  )
+    #choorte--
+
+    cohorte = (
+        df.groupby(["cohort_month", "period_index"], as_index=False)["CustomerID"]
+        .nunique()
+        .rename(columns={"CustomerID": "active_customers"})
+        .sort_values(["cohort_month", "period_index"])
+    )
+
+    cohorte["cohort_size"] = cohorte.groupby("cohort_month")["active_customers"].transform("first")
+
+    cohorte["retention_rate"] = cohorte["active_customers"] / cohorte["cohort_size"]
+
+    #------------------
+
+    carpeta_salida = Path("submission")
+    carpeta_salida.mkdir(parents=True, exist_ok=True)
+    cohorte.to_csv(carpeta_salida / "cohort_retention.csv", index=False)
+
+
+    #tabla-----------
+    
+    tabla_pivot = cohorte.pivot(index="cohort_month", columns="period_index", values="retention_rate") * 100
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.imshow(tabla_pivot.values, aspect="auto", cmap="Blues")
+    ax.set_xticks(range(len(tabla_pivot.columns)))
+    ax.set_xticklabels(tabla_pivot.columns)
+    ax.set_yticks(range(len(tabla_pivot.index)))
+    ax.set_yticklabels(tabla_pivot.index)
+    ax.set_xlabel("period_index")
+    ax.set_ylabel("cohort_month")
+    for i in range(len(tabla_pivot.index)):
+        for j in range(len(tabla_pivot.columns)):
+            val = tabla_pivot.iloc[i, j]
+            if pd.notna(val):
+                ax.text(j, i, f"{val:.1f}%", ha="center", va="center")
+    fig.tight_layout()
+    fig.savefig(carpeta_salida / "cohort_retention_heatmap.png")
+    plt.close(fig)
+
+    return cohorte

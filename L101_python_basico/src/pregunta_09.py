@@ -13,11 +13,11 @@ def pregunta_09():
 
         {"aaa": 13, "bbb": 16, "ccc": 23, ...}
     """
-    counts = Counter()
-    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as file:
-        for row in csv.reader(file, delimiter="\t"):
+    conteo = Counter()
+    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as archivo:
+        for row in csv.reader(archivo, delimiter="\t"):
             if row:
-                for pair in row[4].split(","):
-                    key, _ = pair.split(":")
-                    counts[key] += 1
-    return dict(sorted(counts.items()))
+                for par in row[4].split(","):
+                    key, _ = par.split(":")
+                    conteo[key] += 1
+    return dict(sorted(conteo.items()))

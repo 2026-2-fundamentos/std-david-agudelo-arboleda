@@ -29,17 +29,17 @@ def pregunta_01():
         1        2                         102                          15.4
         ...
     """
-    pattern = re.compile(r"^\s*(\d+)\s+(\d+)\s+([\d,]+)\s*%\s+(.*)$")
-    rows = []
-    current = None
+    patron = re.compile(r"^\s*(\d+)\s+(\d+)\s+([\d,]+)\s*%\s+(.*)$")
+    filas = []
+    actual = None
 
-    with open("data/clusters_report.txt", encoding="utf-8") as file:
-        for line in file.readlines()[4:]:
-            match = pattern.match(line)
+    with open("data/clusters_report.txt", encoding="utf-8") as archivo:
+        for linea in archivo.readlines()[4:]:
+            match = patron.match(linea)
             if match:
-                if current is not None:
-                    rows.append(current)
-                current = {
+                if actual is not None:
+                    filas.append(actual)
+                actual = {
                     "cluster": int(match.group(1)),
                     "cantidad_de_palabras_clave": int(match.group(2)),
                     "porcentaje_de_palabras_clave": float(
@@ -47,15 +47,15 @@ def pregunta_01():
                     ),
                     "principales_palabras_clave": match.group(4).strip(),
                 }
-            elif current is not None and line.strip():
-                current["principales_palabras_clave"] += " " + line.strip()
+            elif actual is not None and linea.strip():
+                actual["principales_palabras_clave"] += " " + linea.strip()
 
-    if current is not None:
-        rows.append(current)
+    if actual is not None:
+        filas.append(actual)
 
-    for row in rows:
+    for row in filas:
         row["principales_palabras_clave"] = " ".join(
             row["principales_palabras_clave"].split()
         ).rstrip(".")
 
-    return pd.DataFrame(rows)
+    return pd.DataFrame(filas)

@@ -13,12 +13,12 @@ def pregunta_08():
 
         [(0, ["C"]), (1, ["B", "E"]), (2, ["A", "E"]), ...]
     """
-    letters_by_value = defaultdict(set)
-    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as file:
-        for row in csv.reader(file, delimiter="\t"):
+    letras_por_valor = defaultdict(set)
+    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as archivo:
+        for row in csv.reader(archivo, delimiter="\t"):
             if row:
-                letters_by_value[int(row[1])].add(row[0])
+                letras_por_valor[int(row[1])].add(row[0])
     return [
-        (val, sorted(letters))
-        for val, letters in sorted(letters_by_value.items())
+        (val, sorted(letras))
+        for val, letras in sorted(letras_por_valor.items())
     ]

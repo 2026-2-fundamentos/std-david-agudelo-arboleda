@@ -17,14 +17,14 @@ def pregunta_06():
 
         [("aaa", 1, 9), ("bbb", 1, 9), ...]
     """
-    values_by_key = defaultdict(list)
-    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as file:
-        for row in csv.reader(file, delimiter="\t"):
+    valores_clave = defaultdict(list)
+    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as archivo:
+        for row in csv.reader(archivo, delimiter="\t"):
             if row:
-                for pair in row[4].split(","):
-                    key, val = pair.split(":")
-                    values_by_key[key].append(int(val))
+                for par in row[4].split(","):
+                    key, val = par.split(":")
+                    valores_clave[key].append(int(val))
     return [
         (key, min(vals), max(vals))
-        for key, vals in sorted(values_by_key.items())
+        for key, vals in sorted(valores_clave.items())
     ]

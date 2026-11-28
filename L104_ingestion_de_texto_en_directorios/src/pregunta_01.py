@@ -29,17 +29,17 @@ def pregunta_01():
         "Cardona slowed her vehicle , turned around ...",neutral
         ...
     """
-    submission_dir = Path("submission")
-    submission_dir.mkdir(parents=True, exist_ok=True)
+    carpeta_salida = Path("submission")
+    carpeta_salida.mkdir(parents=True, exist_ok=True)
 
     for split in ["train", "test"]:
-        records = []
-        split_dir = Path("data") / split
-        for target_dir in sorted(p for p in split_dir.iterdir() if p.is_dir()):
-            for file_path in sorted(target_dir.glob("*.txt")):
-                phrase = file_path.read_text(encoding="utf-8").strip()
-                records.append({"phrase": phrase, "target": target_dir.name})
+        registros = []
+        carpeta_split = Path("data") / split
+        for carpeta_target in sorted(p for p in carpeta_split.iterdir() if p.is_dir()):
+            for ruta_archivo in sorted(carpeta_target.glob("*.txt")):
+                phrase = ruta_archivo.read_text(encoding="utf-8").strip()
+                registros.append({"phrase": phrase, "target": carpeta_target.name})
 
-        pd.DataFrame(records, columns=["phrase", "target"]).to_csv(
-            submission_dir / f"{split}_dataset.csv", index=False
+        pd.DataFrame(registros, columns=["phrase", "target"]).to_csv(
+            carpeta_salida / f"{split}_dataset.csv", index=False
         )

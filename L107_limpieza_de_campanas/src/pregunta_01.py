@@ -43,8 +43,8 @@ def clean_campaign_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         0,1,261,...,2022-05-13
         ...
     """
-    files = sorted(Path("data").glob("bank-marketing-campaing-*.csv.gz"))
-    df = pd.concat((pd.read_csv(f, index_col=0) for f in files), ignore_index=True)
+    archivos = sorted(Path("data").glob("bank-marketing-campaing-*.csv.gz"))
+    df = pd.concat((pd.read_csv(f, index_col=0) for f in archivos), ignore_index=True)
 
     client = df[
         ["client_id", "age", "job", "marital", "education", "credit_default", "mortgage"]
@@ -76,10 +76,10 @@ def clean_campaign_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
     economics = df[["client_id", "cons_price_idx", "euribor_three_months"]].copy()
 
-    submission_dir = Path("submission")
-    submission_dir.mkdir(parents=True, exist_ok=True)
-    client.to_csv(submission_dir / "client.csv", index=False)
-    campaign.to_csv(submission_dir / "campaign.csv", index=False)
-    economics.to_csv(submission_dir / "economics.csv", index=False)
+    carpeta_salida = Path("submission")
+    carpeta_salida.mkdir(parents=True, exist_ok=True)
+    client.to_csv(carpeta_salida / "client.csv", index=False)
+    campaign.to_csv(carpeta_salida / "campaign.csv", index=False)
+    economics.to_csv(carpeta_salida / "economics.csv", index=False)
 
     return client, campaign, economics

@@ -1,3 +1,5 @@
+from pathlib import Path
+import numpy as np
 import pandas as pd
 
 
@@ -60,5 +62,72 @@ def pregunta_01() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         letter,28138,...
         ...
     """
+    #--
+    cartas = pd.read_csv("data/historical_requests_letter.csv.gz").drop_duplicates()
+    cartas["channel"] = "letter"
 
-    raise NotImplementedError
+    #print(cartas.head())
+
+    #--
+    web = pd.read_csv("data/historical_requests_web.csv.gz").drop_duplicates()
+    web["channel"] = "web"  
+
+    #---
+
+    df = pd.concat([cartas, web], ignore_index=True)
+
+    fecha_in = pd.to_datetime(df["in_date"])
+
+    fecha_out = pd.to_datetime(df["out_date"])
+    respondidas = fecha_out.notna()
+
+    #---
+
+    df["year"] = fecha_in.dt.year
+    df["pending"] = ~respondidas
+    #print(df)
+    df["calendar_days"] = (fecha_out - fecha_in).dt.days
+    df["business_days"] = np.nan
+
+
+    df.loc[respondidas, "business_days"] = np.busday_count(
+        (fecha_in[respondidas] + pd.Timedelta(days=1)).values.astype("datetime64[D]"),
+        (fecha_out[respondidas] + pd.Timedelta(days=1)).values.astype("datetime64[D]"),
+    )
+
+
+    df["on_time"] = respondidas & (df["business_days"] <= 15)
+
+    #print(df.head())
+
+    #------
+
+    canales = df.groupby("channel", as_index=False).agg(
+        requests=("channel", "size"),
+        answered=("pending", lambda s: (~s).sum()),
+        pending=("pending", "sum"),
+        median_business_days=("business_days", "median"),
+        on_time_rate=("on_time", "mean"),
+    )
+
+    anual = df.groupby(["year", "channel"], as_index=False).agg(
+        requests=("channel", "size"),
+        pending=("pending", "sum"),
+        on_time_rate=("on_time", "mean"),
+    )
+
+    orden_dias = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    df["day_name"] = pd.Categorical(df["day_name"], categories=orden_dias, ordered=True)
+    dias = df.groupby("day_name", observed=False, as_index=False).agg(
+        requests=("day_name", "size"),
+        median_calendar_days=("calendar_days", "median"),
+        median_business_days=("business_days", "median"),
+    )
+
+    carpeta_salida = Path("submission")
+    carpeta_salida.mkdir(parents=True, exist_ok=True)
+    canales.to_csv(carpeta_salida / "channel_summary.csv", index=False)
+    anual.to_csv(carpeta_salida / "yearly_summary.csv", index=False)
+    dias.to_csv(carpeta_salida / "entry_day_summary.csv", index=False)
+
+    return canales, anual, dias

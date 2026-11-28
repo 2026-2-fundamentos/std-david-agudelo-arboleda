@@ -11,9 +11,9 @@ def pregunta_01():
 
         214
     """
-    total = 0
-    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as file:
-        for row in csv.reader(file, delimiter="\t"):
+    suma_total = 0
+    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as archivo:
+        for row in csv.reader(archivo, delimiter="\t"):
             if row:
-                total += int(row[1])
-    return total
+                suma_total += int(row[1])
+    return suma_total

@@ -17,7 +17,7 @@ def pregunta_13():
         C     81
         ...
     """
-    tbl0 = pd.read_csv("data/tbl0.tsv", sep="\t")
-    tbl2 = pd.read_csv("data/tbl2.tsv", sep="\t")
-    merged = pd.merge(tbl0, tbl2, on="c0")
-    return merged.groupby("c1")["c5b"].sum()
+    tabla_0 = pd.read_csv("data/tbl0.tsv", sep="\t")
+    tabla_2 = pd.read_csv("data/tbl2.tsv", sep="\t")
+    cruce = pd.merge(tabla_0, tabla_2, on="c0")
+    return cruce.groupby("c1")["c5b"].sum()

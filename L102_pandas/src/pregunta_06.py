@@ -11,5 +11,5 @@ def pregunta_06():
 
         ["A", "B", "C", "D", "E", "F", "G"]
     """
-    df = pd.read_csv("data/tbl1.tsv", sep="\t")
-    return sorted(df["c4"].str.upper().unique().tolist())
+    datos = pd.read_csv("data/tbl1.tsv", sep="\t")
+    return sorted(datos["c4"].str.upper().unique().tolist())

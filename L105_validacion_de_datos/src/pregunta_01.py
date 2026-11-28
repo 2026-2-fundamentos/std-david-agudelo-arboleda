@@ -59,7 +59,7 @@ def main():
         for col in df.columns
     ]
 
-    required_columns = [
+    columnas_req = [
         "supplier_id",
         "supplier",
         "country",
@@ -73,12 +73,12 @@ def main():
         "contact_email",
     ]
 
-    missing_values = {"", "N/A"}
-    email_pattern = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+    faltantes = {"", "N/A"}
+    patron_email = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
     invalid_unit_count = 0
     for val in df["units"]:
-        if val in missing_values:
+        if val in faltantes:
             continue
         try:
             num = float(val)
@@ -87,28 +87,28 @@ def main():
         if not (num > 0 and num.is_integer()):
             invalid_unit_count += 1
 
-    report = {
+    reporte = {
         "row_count": int(len(df)),
         "column_count": int(len(df.columns)),
-        "missing_required_columns": sorted(set(required_columns) - set(df.columns)),
-        "unexpected_columns": sorted(set(df.columns) - set(required_columns)),
+        "missing_required_columns": sorted(set(columnas_req) - set(df.columns)),
+        "unexpected_columns": sorted(set(df.columns) - set(columnas_req)),
         "duplicate_row_count": int(df.duplicated().sum()),
         "duplicate_supplier_id_row_count": int(
             df["supplier_id"].duplicated(keep=False).sum()
         ),
         "missing_value_count_by_column": {
-            col: int(df[col].isin(missing_values).sum()) for col in df.columns
+            col: int(df[col].isin(faltantes).sum()) for col in df.columns
         },
         "invalid_email_count": int(
-            (~df["contact_email"].str.match(email_pattern)).sum()
+            (~df["contact_email"].str.match(patron_email)).sum()
         ),
         "invalid_unit_count": invalid_unit_count,
         "country_values": sorted(df["country"].unique().tolist()),
     }
 
-    submission_dir = Path("submission")
-    submission_dir.mkdir(parents=True, exist_ok=True)
-    (submission_dir / "data_quality_report.json").write_text(
-        json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
+    carpeta_salida = Path("submission")
+    carpeta_salida.mkdir(parents=True, exist_ok=True)
+    (carpeta_salida / "data_quality_report.json").write_text(
+        json.dumps(reporte, indent=2, ensure_ascii=False), encoding="utf-8"
     )
-    return report
+    return reporte

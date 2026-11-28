@@ -1,3 +1,4 @@
+from pathlib import Path
 import pandas as pd
 
 
@@ -57,5 +58,60 @@ def pregunta_01() -> tuple[pd.DataFrame, pd.DataFrame]:
         EV,819223,...,1,1
         ...
     """
+    #df
+    df = pd.read_csv("data/flights_by_carrier_day_hour.csv.gz")
 
-    raise NotImplementedError
+
+    #ojo
+    por_hora = df.groupby("scheduled_departure_hour", as_index=False)[
+        ["operated_flights", "delayed_departure_15_flights"]].sum()
+
+    #---
+    
+    por_hora["delay_rate"] = por_hora["delayed_departure_15_flights"] / por_hora["operated_flights"]
+
+    #-
+
+    cruce = df.merge(por_hora[["scheduled_departure_hour", "delay_rate"]], on="scheduled_departure_hour")
+    cruce["expected_delayed_flights"] = cruce["operated_flights"] * cruce["delay_rate"]
+
+    #.as
+
+    aerolineas = cruce.groupby("reporting_airline", as_index=False)[
+        ["operated_flights", "delayed_departure_15_flights", "expected_delayed_flights"]
+    ].sum()
+
+    #print(aerolineas.head())
+    #----
+
+    aerolineas = aerolineas[aerolineas["operated_flights"] >= 100000].copy()
+
+    aerolineas["delay_rate"] = aerolineas["delayed_departure_15_flights"] / aerolineas["operated_flights"]
+    
+    aerolineas["observed_to_expected_ratio"] = (
+        aerolineas["delayed_departure_15_flights"] / aerolineas["expected_delayed_flights"])
+    
+    aerolineas["crude_rank"] = aerolineas["delay_rate"].rank(ascending=False, method="min").astype(int)
+    
+    aerolineas["adjusted_rank"] = (
+        aerolineas["observed_to_expected_ratio"].rank(ascending=False, method="min").astype(int))
+    
+    aerolineas = aerolineas[
+        [
+            "reporting_airline",
+            "operated_flights",
+            "delayed_departure_15_flights",
+            "delay_rate",
+            "expected_delayed_flights",
+            "observed_to_expected_ratio",
+            "crude_rank",
+            "adjusted_rank",
+        ]
+    ].sort_values("adjusted_rank")
+
+    carpeta_salida = Path("submission")
+    carpeta_salida.mkdir(parents=True, exist_ok=True)
+    por_hora.to_csv(carpeta_salida / "hourly_delay_rates.csv", index=False)
+    aerolineas.to_csv(carpeta_salida / "carrier_adjusted_delays.csv", index=False)
+
+    return por_hora, aerolineas

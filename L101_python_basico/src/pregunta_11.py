@@ -14,11 +14,11 @@ def pregunta_11():
 
         {"a": 122, "b": 49, "c": 91, ...}
     """
-    totals = defaultdict(int)
-    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as file:
-        for row in csv.reader(file, delimiter="\t"):
+    totales = defaultdict(int)
+    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as archivo:
+        for row in csv.reader(archivo, delimiter="\t"):
             if row:
                 val = int(row[1])
                 for code in row[3].split(","):
-                    totals[code] += val
-    return dict(sorted(totals.items()))
+                    totales[code] += val
+    return dict(sorted(totales.items()))

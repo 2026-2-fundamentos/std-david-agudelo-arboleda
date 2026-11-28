@@ -13,9 +13,9 @@ def pregunta_03():
 
         [("A", 53), ("B", 36), ("C", 27), ...]
     """
-    totals = defaultdict(int)
-    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as file:
-        for row in csv.reader(file, delimiter="\t"):
+    totales = defaultdict(int)
+    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as archivo:
+        for row in csv.reader(archivo, delimiter="\t"):
             if row:
-                totals[row[0]] += int(row[1])
-    return sorted(totals.items())
+                totales[row[0]] += int(row[1])
+    return sorted(totales.items())

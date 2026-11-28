@@ -13,10 +13,10 @@ def pregunta_04():
 
         [("01", 3), ("02", 4), ("03", 2), ...]
     """
-    counts = Counter()
-    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as file:
-        for row in csv.reader(file, delimiter="\t"):
+    conteo_meses = Counter()
+    with gzip.open("data/data.csv.gz", "rt", encoding="utf-8") as archivo:
+        for row in csv.reader(archivo, delimiter="\t"):
             if row:
-                month = row[2].split("-")[1]
-                counts[month] += 1
-    return sorted(counts.items())
+                mes = row[2].split("-")[1]
+                conteo_meses[mes] += 1
+    return sorted(conteo_meses.items())
